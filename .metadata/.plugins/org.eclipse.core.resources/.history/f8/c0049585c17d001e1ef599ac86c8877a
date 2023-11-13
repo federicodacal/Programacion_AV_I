@@ -1,0 +1,9 @@
+package com.example.demo.model;
+
+public class DomicilioModel {
+	
+	private Long id;
+	private String calle;
+	private Intenger altura;
+
+}
