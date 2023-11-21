@@ -17,6 +17,11 @@ import javax.persistence.CascadeType;
 @Table(name = "sys_domicilio")
 public class DomicilioModel implements Serializable {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -7369456692304428967L;
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "dom_id")

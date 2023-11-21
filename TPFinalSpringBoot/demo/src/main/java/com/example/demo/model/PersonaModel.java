@@ -21,6 +21,11 @@ import javax.validation.constraints.NotNull;
 @Table(name = "sys_persona")
 public class PersonaModel implements Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -1367246936244134243L;
+
 	@Column(name = "per_id")
 	@Id // PK
 	@GeneratedValue(strategy = GenerationType.IDENTITY) // AUTOINCREMENTAL

@@ -1,6 +1,7 @@
 package com.example.demo.controller;
  
 import java.util.ArrayList;
+
 import java.util.List;
 
 import javax.validation.Valid;
@@ -18,11 +19,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.dto.PersonaDTO;
+import com.example.demo.dto.PersonaMapper;
 import com.example.demo.model.DomicilioModel;
 import com.example.demo.model.PersonaModel;
 import com.example.demo.repository.PersonaRepository;
 
-import net.bytebuddy.dynamic.DynamicType.Builder.FieldDefinition.Optional;
 
 @RestController
 @RequestMapping("/api")
@@ -30,6 +32,9 @@ public class PersonaController {
 	
 	@Autowired // Singleton de la entidad para no generar múltiples objetos
 	PersonaRepository personaRepository;
+	
+	@Autowired 
+	PersonaMapper personaMapper;  
 	
 	@GetMapping({"/saludar", "/saludo"})
 	public String saludar() {
@@ -112,7 +117,7 @@ public class PersonaController {
 		
 		List<PersonaModel> personas = (List<PersonaModel>) personaRepository.findAll();
 		
-		return new ResponseEntity<List<PersonaModel>>(personas, HttpStatus.OK);
+		return new ResponseEntity<List<PersonaDTO>>(personaMapper.lstEntityToLstDto(personas), HttpStatus.OK);
 	}
 	
 	@PostMapping("/persona")
@@ -140,17 +145,58 @@ public class PersonaController {
 	}
 	
 	@PutMapping("/persona")
-	public ResponseEntity<?> modificarPersona(@RequestBody @Validated PersonaModel p) {
+	public ResponseEntity<?> modificarPersona(@RequestBody @Validated PersonaDTO p) {
 		
 		System.out.println(p.toString());
 		
-		personaRepository.save(p); // Si tiene id hace un update, si no tiene id hace insert
+		java.util.Optional<PersonaModel> pOpt = personaRepository.findById(p.getId());
 		
-		return new ResponseEntity<String>("Persona modificada", HttpStatus.OK);
+		if(pOpt.isPresent()) {
+			personaRepository.save(personaMapper.dtoToEntity(p)); // Si tiene id hace un update, si no tiene id hace insert
+			return new ResponseEntity<String>("Persona modificada", HttpStatus.OK);
+		}
+		else {
+			return new ResponseEntity<String>("No se encontró persona con id " + p.getId(), HttpStatus.OK);
+		}
 	}
 	
 	/*******************************************************************************/
 	
+	@GetMapping("/personaApellido/{lastname}")
+	public ResponseEntity<?> obtenerPersonaPorApellido(@PathVariable String lastname) {
+		if(lastname == null) {
+			return new ResponseEntity<String>("del /personaApellido", HttpStatus.OK);
+		}
+		try { 
+			
+			List<PersonaModel> entities = personaRepository.findAllByApellido(lastname); 
+			
+			return new ResponseEntity<List<PersonaDTO>>(personaMapper.lstEntityToLstDto(entities), HttpStatus.OK);
+
+		}
+		catch (Exception e) {
+			return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
+		}
+	}
+	
+	@GetMapping("/personaNombre/{name}")
+	public ResponseEntity<?> obtenerPersonaPorNombre(@PathVariable String name) {
+		if(name == null) {
+			return new ResponseEntity<String>("del /personaNombre", HttpStatus.OK);
+		}
+		try {
+			
+			String calle = "Calle Falsa";
+			
+			List<PersonaModel> entities = personaRepository.buscarPorDatos(name, calle); 
+			
+			return new ResponseEntity<List<PersonaDTO>>(personaMapper.lstEntityToLstDto(entities), HttpStatus.OK);
+
+		}
+		catch (Exception e) {
+			return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
+		}
+	}
 	
 	
 }
